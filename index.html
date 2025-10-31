@@ -3,41 +3,37 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Progreso: año · mes · día · vida</title>
+  <title>Progreso temporal</title>
   <style>
-    :root{--bg:#0f1724;--card:#0b1220;--fg:#e6eef8;--muted:#9fb0c9;--bar-bg:#203049;--bar-fill:#66c2ff}
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#071026);color:var(--fg);display:flex;align-items:center;justify-content:center;padding:20px}
-    .card{width:100%;max-width:520px;padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.04));box-shadow:0 6px 18px rgba(2,6,23,0.6)}
-    h1{margin:0 0 8px;font-size:18px;letter-spacing:0.2px}
-    p.desc{margin:0 0 16px;color:var(--muted);font-size:13px}
-    .row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-    .label{width:100px;font-size:13px;color:var(--muted)}
-    .value{min-width:74px;text-align:right;font-variant-numeric:tabular-nums}
-    .bar{flex:1;height:12px;background:var(--bar-bg);border-radius:999px;overflow:hidden;position:relative}
+    :root{--bg:#0f1724;--bar-bg:#203049;--bar-fill:#66c2ff;--fg:#e6eef8;--muted:#9fb0c9}
+    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#071026);color:var(--fg);font-family:system-ui,Segoe UI,Roboto,sans-serif;display:flex;align-items:center;justify-content:center}
+    .grid{display:grid;grid-template-columns:1fr 1fr;grid-gap:18px;width:90%;max-width:500px}
+    .cell{display:flex;flex-direction:column;align-items:center;gap:8px;background:rgba(255,255,255,0.05);border-radius:12px;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,0.3)}
+    .label{font-size:14px;color:var(--muted)}
+    .bar{width:100%;height:14px;background:var(--bar-bg);border-radius:999px;overflow:hidden}
     .fill{height:100%;width:0%;background:linear-gradient(90deg,var(--bar-fill),#2fa7ff);border-radius:999px;transition:width 400ms linear}
-    .meta{margin-top:10px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between}
-    small{color:var(--muted)}
+    .value{font-size:16px}
     @media (prefers-reduced-motion:reduce){.fill{transition:none}}
   </style>
 </head>
 <body>
-  <main class="card" role="main" aria-labelledby="title">
-    <h1 id="title">Progreso del tiempo</h1>
-    <p class="desc">Porcentaje transcurrido del año, mes, día y desde el 11/09/1980 hasta 4000 semanas. Actualiza en tiempo real.</p>
-
-    <div class="row"><div class="label">Año</div><div class="bar"><div class="fill" id="yearFill"></div></div><div class="value" id="yearPct">0.00%</div></div>
-    <div class="row"><div class="label">Mes</div><div class="bar"><div class="fill" id="monthFill"></div></div><div class="value" id="monthPct">0.00%</div></div>
-    <div class="row"><div class="label">Día</div><div class="bar"><div class="fill" id="dayFill"></div></div><div class="value" id="dayPct">0.00%</div></div>
-    <div class="row"><div class="label">4000 semanas</div><div class="bar"><div class="fill" id="lifeFill"></div></div><div class="value" id="lifePct">0.00%</div></div>
-
-    <div class="meta"><small id="nowText">—</small><small>Actualiza cada segundo</small></div>
-  </main>
+  <div class="grid">
+    <div class="cell"><div class="label" id="yearLabel"></div><div class="bar"><div class="fill" id="yearFill"></div></div><div class="value" id="yearPct">0%</div></div>
+    <div class="cell"><div class="label" id="monthLabel"></div><div class="bar"><div class="fill" id="monthFill"></div></div><div class="value" id="monthPct">0%</div></div>
+    <div class="cell"><div class="label" id="dayLabel"></div><div class="bar"><div class="fill" id="dayFill"></div></div><div class="value" id="dayPct">0%</div></div>
+    <div class="cell"><div class="label" id="weekLabel"></div><div class="bar"><div class="fill" id="lifeFill"></div></div><div class="value" id="lifePct">0%</div></div>
+  </div>
 
   <script>
     (function(){
-      const el={yearFill:yearFill,monthFill:monthFill,dayFill:dayFill,lifeFill:lifeFill,yearPct:yearPct,monthPct:monthPct,dayPct:dayPct,lifePct:lifePct,nowText:nowText};
+      const el={
+        yearLabel:yearLabel,monthLabel:monthLabel,dayLabel:dayLabel,weekLabel:weekLabel,
+        yearFill:yearFill,monthFill:monthFill,dayFill:dayFill,lifeFill:lifeFill,
+        yearPct:yearPct,monthPct:monthPct,dayPct:dayPct,lifePct:lifePct
+      };
+
+      const birth=new Date('1980-09-11T00:00:00Z').getTime();
+      const endLife=birth+4000*7*24*60*60*1000;
 
       function pct(start,end,now){return Math.max(0,Math.min(1,(now-start)/(end-start)))}
       function startOfDay(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
@@ -47,13 +43,17 @@
       function startOfNextYear(d){return new Date(d.getFullYear()+1,0,1)}
       function formatPct(n){return(n*100).toFixed(2)+'%'}
 
-      const birth=new Date('1980-09-11T00:00:00Z').getTime();
-      const weeks4000=4000*7*24*60*60*1000;
-      const endLife=birth+weeks4000;
-
       function tick(){
         const now=new Date();
         const nowMs=now.getTime();
+        el.yearLabel.textContent=now.getFullYear();
+        el.monthLabel.textContent=now.toLocaleDateString('es-ES',{month:'long'});
+        el.dayLabel.textContent=now.toLocaleDateString('es-ES',{weekday:'long'});
+
+        const start1980=new Date('1980-09-11T00:00:00Z');
+        const diffWeeks=Math.floor((now-start1980)/(7*24*60*60*1000));
+        el.weekLabel.textContent='Semana '+diffWeeks;
+
         const py=pct(startOfYear(now).getTime(),startOfNextYear(now).getTime(),nowMs);
         const pm=pct(startOfMonth(now).getTime(),startOfNextMonth(now).getTime(),nowMs);
         const pd=pct(startOfDay(now).getTime(),startOfDay(now).getTime()+86400000,nowMs);
@@ -68,8 +68,6 @@
         el.monthPct.textContent=formatPct(pm);
         el.dayPct.textContent=formatPct(pd);
         el.lifePct.textContent=formatPct(pl);
-
-        el.nowText.textContent=now.toLocaleString();
 
         setTimeout(tick,1000-now.getMilliseconds());
       }
