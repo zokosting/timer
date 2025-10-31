@@ -6,10 +6,10 @@
   <title>¡Hola, Ángel!</title>
   <style>
     :root{--bar-bg:#ddd;--bar-fill:#007bff;--fg:#000;--muted:#777}
-    html,body{height:100%;width:100%;margin:0;padding:0;color:var(--fg);font-family:system-ui,Segoe UI,Roboto,sans-serif;display:flex;align-items:center;justify-content:center}
-    .grid{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:auto auto auto;row-gap:20px;width:100%;height:95%;gap:0}
+    html,body{height:100%;width:100%;margin:0;padding:40px;color:var(--fg);font-family:system-ui,Segoe UI,Roboto,sans-serif;display:flex;align-items:center;justify-content:center}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:auto auto auto;row-gap:30px;width:100%;height:90%;gap:20px}
     .cell{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;box-sizing:border-box}
-    .single-cell{grid-column:1/3;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px}
+    .single-cell{grid-column:1/3;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:10px;width:50%}
     .label{font-size:22px;font-weight:700;text-transform:capitalize}
     .bar{width:90%;height:36px;background:var(--bar-bg);border-radius:999px;overflow:hidden}
     .fill{height:100%;width:0%;background:linear-gradient(90deg,var(--bar-fill),#33a0ff);border-radius:999px;transition:width .3s linear}
@@ -24,9 +24,9 @@
     <div class="cell"><div class="label" id="monthLabel"></div><div class="bar"><div class="fill" id="monthFill"></div></div><div class="value" id="monthPct">0%</div></div>
     <!-- Fila 2: 4000 semanas centrada -->
     <div class="single-cell"><div class="label" id="lifeLabel">4000 semanas</div><div class="bar"><div class="fill" id="lifeFill"></div></div><div class="value" id="lifePct">0%</div></div>
-    <!-- Fila 3: Día del mes y Semana actual -->
-    <div class="cell"><div class="label" id="dayLabel"></div><div class="bar"><div class="fill" id="dayFill"></div></div><div class="value" id="dayPct">0%</div></div>
+    <!-- Fila 3: Semana actual y Día del mes (orden intercambiado) -->
     <div class="cell"><div class="label" id="weekLabel"></div><div class="bar"><div class="fill" id="weekFill"></div></div><div class="value" id="weekPct">0%</div></div>
+    <div class="cell"><div class="label" id="dayLabel"></div><div class="bar"><div class="fill" id="dayFill"></div></div><div class="value" id="dayPct">0%</div></div>
   </div>
 
   <script>
@@ -54,7 +54,7 @@
         // Etiquetas dinámicas
         el.yearLabel.textContent=n.getFullYear();
         el.monthLabel.textContent=n.toLocaleDateString('es-ES',{month:'long'});
-        el.dayLabel.textContent=n.getDate();
+        el.dayLabel.textContent='Día '+n.getDate();
         const dayOfWeek=n.toLocaleDateString('es-ES',{weekday:'long'});
         el.weekLabel.textContent=dayOfWeek;
 
