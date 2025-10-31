@@ -1,145 +1,80 @@
 <!doctype html>
-
 <html lang="es">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
-  <title>Progreso: año · mes · día</title>
+  <title>Progreso: año · mes · día · vida</title>
   <style>
-    /* Súper ligero: todo en línea, sin fuentes externas ni imágenes */
     :root{--bg:#0f1724;--card:#0b1220;--fg:#e6eef8;--muted:#9fb0c9;--bar-bg:#203049;--bar-fill:#66c2ff}
     *{box-sizing:border-box}
     html,body{height:100%}
-    body{
-      margin:0; font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,"Noto Sans",sans-serif;
-      background:linear-gradient(180deg,var(--bg),#071026); color:var(--fg); display:flex;align-items:center;justify-content:center;
-      padding:20px;
-    }
+    body{margin:0;font-family:system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;background:linear-gradient(180deg,var(--bg),#071026);color:var(--fg);display:flex;align-items:center;justify-content:center;padding:20px}
     .card{width:100%;max-width:520px;padding:18px;border-radius:12px;background:linear-gradient(180deg,rgba(255,255,255,0.02),rgba(0,0,0,0.04));box-shadow:0 6px 18px rgba(2,6,23,0.6)}
     h1{margin:0 0 8px;font-size:18px;letter-spacing:0.2px}
     p.desc{margin:0 0 16px;color:var(--muted);font-size:13px}
     .row{display:flex;align-items:center;gap:12px;margin-bottom:12px}
-    .label{width:82px;font-size:13px;color:var(--muted)}
+    .label{width:100px;font-size:13px;color:var(--muted)}
     .value{min-width:74px;text-align:right;font-variant-numeric:tabular-nums}
     .bar{flex:1;height:12px;background:var(--bar-bg);border-radius:999px;overflow:hidden;position:relative}
     .fill{height:100%;width:0%;background:linear-gradient(90deg,var(--bar-fill),#2fa7ff);border-radius:999px;transition:width 400ms linear}
     .meta{margin-top:10px;font-size:12px;color:var(--muted);display:flex;justify-content:space-between}
     small{color:var(--muted)}
-    /* Reduce motion if user prefers */
     @media (prefers-reduced-motion:reduce){.fill{transition:none}}
   </style>
 </head>
 <body>
   <main class="card" role="main" aria-labelledby="title">
     <h1 id="title">Progreso del tiempo</h1>
-    <p class="desc">Muestra en porcentaje cuánto llevamos del año, del mes y del día. Actualiza en tiempo real. Página muy ligera.</p><div id="yearRow" class="row" aria-live="polite">
-  <div class="label">Año</div>
-  <div class="bar" aria-hidden="true"><div class="fill" id="yearFill"></div></div>
-  <div class="value" id="yearPct">0.00%</div>
-</div>
+    <p class="desc">Porcentaje transcurrido del año, mes, día y desde el 11/09/1980 hasta 4000 semanas. Actualiza en tiempo real.</p>
 
-<div id="monthRow" class="row" aria-live="polite">
-  <div class="label">Mes</div>
-  <div class="bar" aria-hidden="true"><div class="fill" id="monthFill"></div></div>
-  <div class="value" id="monthPct">0.00%</div>
-</div>
+    <div class="row"><div class="label">Año</div><div class="bar"><div class="fill" id="yearFill"></div></div><div class="value" id="yearPct">0.00%</div></div>
+    <div class="row"><div class="label">Mes</div><div class="bar"><div class="fill" id="monthFill"></div></div><div class="value" id="monthPct">0.00%</div></div>
+    <div class="row"><div class="label">Día</div><div class="bar"><div class="fill" id="dayFill"></div></div><div class="value" id="dayPct">0.00%</div></div>
+    <div class="row"><div class="label">4000 semanas</div><div class="bar"><div class="fill" id="lifeFill"></div></div><div class="value" id="lifePct">0.00%</div></div>
 
-<div id="dayRow" class="row" aria-live="polite">
-  <div class="label">Día</div>
-  <div class="bar" aria-hidden="true"><div class="fill" id="dayFill"></div></div>
-  <div class="value" id="dayPct">0.00%</div>
-</div>
+    <div class="meta"><small id="nowText">—</small><small>Actualiza cada segundo</small></div>
+  </main>
 
-<div class="meta">
-  <small id="nowText">—</small>
-  <small>Actualiza cada segundo</small>
-</div>
-
-  </main>  <script>
-    // Minimal, dependency-free. Cálculos precisos (incluye años bisiestos).
+  <script>
     (function(){
-      const el = {
-        yearFill: document.getElementById('yearFill'),
-        monthFill: document.getElementById('monthFill'),
-        dayFill: document.getElementById('dayFill'),
-        yearPct: document.getElementById('yearPct'),
-        monthPct: document.getElementById('monthPct'),
-        dayPct: document.getElementById('dayPct'),
-        nowText: document.getElementById('nowText')
-      };
+      const el={yearFill:yearFill,monthFill:monthFill,dayFill:dayFill,lifeFill:lifeFill,yearPct:yearPct,monthPct:monthPct,dayPct:dayPct,lifePct:lifePct,nowText:nowText};
 
-      function pct(start, end, now){
-        const total = end - start;
-        const passed = now - start;
-        return Math.max(0, Math.min(1, passed / total));
-      }
+      function pct(start,end,now){return Math.max(0,Math.min(1,(now-start)/(end-start)))}
+      function startOfDay(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+      function startOfMonth(d){return new Date(d.getFullYear(),d.getMonth(),1)}
+      function startOfNextMonth(d){return new Date(d.getFullYear(),d.getMonth()+1,1)}
+      function startOfYear(d){return new Date(d.getFullYear(),0,1)}
+      function startOfNextYear(d){return new Date(d.getFullYear()+1,0,1)}
+      function formatPct(n){return(n*100).toFixed(2)+'%'}
 
-      function startOfDay(d){
-        return new Date(d.getFullYear(), d.getMonth(), d.getDate());
-      }
-      function startOfMonth(d){
-        return new Date(d.getFullYear(), d.getMonth(), 1);
-      }
-      function startOfNextMonth(d){
-        return new Date(d.getFullYear(), d.getMonth()+1, 1);
-      }
-      function startOfYear(d){
-        return new Date(d.getFullYear(), 0, 1);
-      }
-      function startOfNextYear(d){
-        return new Date(d.getFullYear()+1, 0, 1);
-      }
+      const birth=new Date('1980-09-11T00:00:00Z').getTime();
+      const weeks4000=4000*7*24*60*60*1000;
+      const endLife=birth+weeks4000;
 
-      function formatPct(n){
-        return (n*100).toFixed(2) + '%';
-      }
-
-      // Update loop: minimal work each tick
       function tick(){
-        const now = new Date();
-        // year
-        const y0 = startOfYear(now).getTime();
-        const y1 = startOfNextYear(now).getTime();
-        const py = pct(y0,y1,now.getTime());
-        // month
-        const m0 = startOfMonth(now).getTime();
-        const m1 = startOfNextMonth(now).getTime();
-        const pm = pct(m0,m1,now.getTime());
-        // day
-        const d0 = startOfDay(now).getTime();
-        const d1 = d0 + 24*60*60*1000; // next day
-        const pd = pct(d0,d1,now.getTime());
+        const now=new Date();
+        const nowMs=now.getTime();
+        const py=pct(startOfYear(now).getTime(),startOfNextYear(now).getTime(),nowMs);
+        const pm=pct(startOfMonth(now).getTime(),startOfNextMonth(now).getTime(),nowMs);
+        const pd=pct(startOfDay(now).getTime(),startOfDay(now).getTime()+86400000,nowMs);
+        const pl=pct(birth,endLife,nowMs);
 
-        // write to DOM (only if different enough to reduce layout thrash)
-        el.yearFill.style.width = (py*100).toFixed(4) + '%';
-        el.monthFill.style.width = (pm*100).toFixed(4) + '%';
-        el.dayFill.style.width = (pd*100).toFixed(4) + '%';
+        el.yearFill.style.width=(py*100).toFixed(4)+'%';
+        el.monthFill.style.width=(pm*100).toFixed(4)+'%';
+        el.dayFill.style.width=(pd*100).toFixed(4)+'%';
+        el.lifeFill.style.width=(pl*100).toFixed(4)+'%';
 
-        el.yearPct.textContent = formatPct(py);
-        el.monthPct.textContent = formatPct(pm);
-        el.dayPct.textContent = formatPct(pd);
+        el.yearPct.textContent=formatPct(py);
+        el.monthPct.textContent=formatPct(pm);
+        el.dayPct.textContent=formatPct(pd);
+        el.lifePct.textContent=formatPct(pl);
 
-        el.nowText.textContent = now.toLocaleString();
+        el.nowText.textContent=now.toLocaleString();
 
-        // schedule next update ~on next second boundary to keep numbers stable
-        const ms = now.getMilliseconds();
-        setTimeout(tick, 1000 - ms);
+        setTimeout(tick,1000-now.getMilliseconds());
       }
-
-      // start
       tick();
-
-      // Expose a tiny API for developers who want to reuse
-      window.__progressTime = {
-        getPercentages: function(){
-          const now = new Date();
-          return {
-            year: pct(startOfYear(now).getTime(), startOfNextYear(now).getTime(), now.getTime()),
-            month: pct(startOfMonth(now).getTime(), startOfNextMonth(now).getTime(), now.getTime()),
-            day: pct(startOfDay(now).getTime(), startOfDay(now).getTime()+24*60*60*1000, now.getTime())
-          };
-        }
-      };
     })();
-  </script></body>
+  </script>
+</body>
 </html>
