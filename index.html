@@ -6,13 +6,13 @@
   <title>Progreso temporal</title>
   <style>
     :root{--bg:#0f1724;--bar-bg:#203049;--bar-fill:#66c2ff;--fg:#e6eef8;--muted:#9fb0c9}
-    html,body{height:100%;margin:0;background:linear-gradient(180deg,var(--bg),#071026);color:var(--fg);font-family:system-ui,Segoe UI,Roboto,sans-serif;display:flex;align-items:center;justify-content:center}
-    .grid{display:grid;grid-template-columns:1fr 1fr;grid-gap:18px;width:90%;max-width:500px}
-    .cell{display:flex;flex-direction:column;align-items:center;gap:8px;background:rgba(255,255,255,0.05);border-radius:12px;padding:14px;box-shadow:0 4px 14px rgba(0,0,0,0.3)}
-    .label{font-size:14px;color:var(--muted)}
-    .bar{width:100%;height:14px;background:var(--bar-bg);border-radius:999px;overflow:hidden}
-    .fill{height:100%;width:0%;background:linear-gradient(90deg,var(--bar-fill),#2fa7ff);border-radius:999px;transition:width 400ms linear}
-    .value{font-size:16px}
+    html,body{height:100%;margin:0;background:var(--bg);color:var(--fg);font-family:system-ui,Segoe UI,Roboto,sans-serif;display:flex;align-items:center;justify-content:center}
+    .grid{display:grid;grid-template-columns:repeat(2,1fr);grid-gap:12px;width:100%;height:100%;padding:12px;box-sizing:border-box}
+    .cell{display:flex;flex-direction:column;justify-content:center;align-items:center;gap:6px;background:rgba(255,255,255,0.04);border-radius:8px;padding:8px}
+    .label{font-size:14px;color:var(--muted);text-transform:capitalize}
+    .bar{width:90%;height:10px;background:var(--bar-bg);border-radius:999px;overflow:hidden}
+    .fill{height:100%;width:0%;background:linear-gradient(90deg,var(--bar-fill),#2fa7ff);border-radius:999px;transition:width 0.4s linear}
+    .value{font-size:15px}
     @media (prefers-reduced-motion:reduce){.fill{transition:none}}
   </style>
 </head>
@@ -26,50 +26,36 @@
 
   <script>
     (function(){
-      const el={
-        yearLabel:yearLabel,monthLabel:monthLabel,dayLabel:dayLabel,weekLabel:weekLabel,
-        yearFill:yearFill,monthFill:monthFill,dayFill:dayFill,lifeFill:lifeFill,
-        yearPct:yearPct,monthPct:monthPct,dayPct:dayPct,lifePct:lifePct
-      };
-
+      const el={yearLabel:yearLabel,monthLabel:monthLabel,dayLabel:dayLabel,weekLabel:weekLabel,yearFill:yearFill,monthFill:monthFill,dayFill:dayFill,lifeFill:lifeFill,yearPct:yearPct,monthPct:monthPct,dayPct:dayPct,lifePct:lifePct};
       const birth=new Date('1980-09-11T00:00:00Z').getTime();
       const endLife=birth+4000*7*24*60*60*1000;
-
-      function pct(start,end,now){return Math.max(0,Math.min(1,(now-start)/(end-start)))}
-      function startOfDay(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
-      function startOfMonth(d){return new Date(d.getFullYear(),d.getMonth(),1)}
-      function startOfNextMonth(d){return new Date(d.getFullYear(),d.getMonth()+1,1)}
-      function startOfYear(d){return new Date(d.getFullYear(),0,1)}
-      function startOfNextYear(d){return new Date(d.getFullYear()+1,0,1)}
-      function formatPct(n){return(n*100).toFixed(2)+'%'}
-
+      function pct(s,e,n){return Math.max(0,Math.min(1,(n-s)/(e-s)))}
+      function sDay(d){return new Date(d.getFullYear(),d.getMonth(),d.getDate())}
+      function sMonth(d){return new Date(d.getFullYear(),d.getMonth(),1)}
+      function sNextMonth(d){return new Date(d.getFullYear(),d.getMonth()+1,1)}
+      function sYear(d){return new Date(d.getFullYear(),0,1)}
+      function sNextYear(d){return new Date(d.getFullYear()+1,0,1)}
+      function fmt(n){return(n*100).toFixed(2)+'%'}
       function tick(){
-        const now=new Date();
-        const nowMs=now.getTime();
-        el.yearLabel.textContent=now.getFullYear();
-        el.monthLabel.textContent=now.toLocaleDateString('es-ES',{month:'long'});
-        el.dayLabel.textContent=now.toLocaleDateString('es-ES',{weekday:'long'});
-
-        const start1980=new Date('1980-09-11T00:00:00Z');
-        const diffWeeks=Math.floor((now-start1980)/(7*24*60*60*1000));
-        el.weekLabel.textContent='Semana '+diffWeeks;
-
-        const py=pct(startOfYear(now).getTime(),startOfNextYear(now).getTime(),nowMs);
-        const pm=pct(startOfMonth(now).getTime(),startOfNextMonth(now).getTime(),nowMs);
-        const pd=pct(startOfDay(now).getTime(),startOfDay(now).getTime()+86400000,nowMs);
-        const pl=pct(birth,endLife,nowMs);
-
-        el.yearFill.style.width=(py*100).toFixed(4)+'%';
-        el.monthFill.style.width=(pm*100).toFixed(4)+'%';
-        el.dayFill.style.width=(pd*100).toFixed(4)+'%';
-        el.lifeFill.style.width=(pl*100).toFixed(4)+'%';
-
-        el.yearPct.textContent=formatPct(py);
-        el.monthPct.textContent=formatPct(pm);
-        el.dayPct.textContent=formatPct(pd);
-        el.lifePct.textContent=formatPct(pl);
-
-        setTimeout(tick,1000-now.getMilliseconds());
+        const n=new Date(),ms=n.getTime();
+        el.yearLabel.textContent=n.getFullYear();
+        el.monthLabel.textContent=n.toLocaleDateString('es-ES',{month:'long'});
+        el.dayLabel.textContent=n.toLocaleDateString('es-ES',{weekday:'long'});
+        const diffW=Math.floor((n-birth)/(7*24*60*60*1000));
+        el.weekLabel.textContent='Semana '+diffW+'/4000';
+        const py=pct(sYear(n).getTime(),sNextYear(n).getTime(),ms);
+        const pm=pct(sMonth(n).getTime(),sNextMonth(n).getTime(),ms);
+        const pd=pct(sDay(n).getTime(),sDay(n).getTime()+86400000,ms);
+        const pl=pct(birth,endLife,ms);
+        el.yearFill.style.width=(py*100).toFixed(2)+'%';
+        el.monthFill.style.width=(pm*100).toFixed(2)+'%';
+        el.dayFill.style.width=(pd*100).toFixed(2)+'%';
+        el.lifeFill.style.width=(pl*100).toFixed(2)+'%';
+        el.yearPct.textContent=fmt(py);
+        el.monthPct.textContent=fmt(pm);
+        el.dayPct.textContent=fmt(pd);
+        el.lifePct.textContent=fmt(pl);
+        setTimeout(tick,1000-n.getMilliseconds());
       }
       tick();
     })();
