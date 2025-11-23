@@ -18,52 +18,69 @@ html,body{margin:0;padding:0;width:100%;height:100%;font-family:system-ui,sans-s
 </head>
 <body>
 <div class="grid">
-  <div class="cell"><div class="label" id="dayLabel"></div><div class="bar"><div class="fill" id="dayFill"></div></div><div class="value" id="dayPct">0%</div></div>
-  <div class="cell"><div class="label" id="weekLabel"></div><div class="bar"><div class="fill" id="weekFill"></div></div><div class="value" id="weekPct">0%</div></div>
-  <div class="cell"><div class="label" id="monthLabel"></div><div class="bar"><div class="fill" id="monthFill"></div></div><div class="value" id="monthPct">0%</div></div>
-  <div class="cell"><div class="label" id="yearLabel"></div><div class="bar"><div class="fill" id="yearFill"></div></div><div class="value" id="yearPct">0%</div></div>
-  <div class="single-cell"><div class="label" id="lifeLabel">4000 semanas</div><div class="bar"><div class="fill" id="lifeFill"></div></div><div class="value" id="lifePct">0%</div></div>  
+  <div class="cell"><div class="label" id="dayLabel"></div><div class="bar"><div class="fill" id="dayFill"></div></div><div class="value" id="dayPct">0%</div></div>
+  <div class="cell"><div class="label" id="weekLabel"></div><div class="bar"><div class="fill" id="weekFill"></div></div><div class="value" id="weekPct">0%</div></div>
+  <div class="cell"><div class="label" id="monthLabel"></div><div class="bar"><div class="fill" id="monthFill"></div></div><div class="value" id="monthPct">0%</div></div>
+  <div class="cell"><div class="label" id="yearLabel"></div><div class="bar"><div class="fill" id="yearFill"></div></div><div class="value" id="yearPct">0%</div></div>
+  <div class="single-cell"><div class="label" id="lifeLabel">4000 semanas</div><div class="bar"><div class="fill" id="lifeFill"></div></div><div class="value" id="lifePct">0%</div></div>  
 </div>
 
 <script>
 (function(){
-  const el={yearLabel,monthLabel,dayLabel,weekLabel,lifeLabel,yearFill,monthFill,dayFill,weekFill,lifeFill,yearPct,monthPct,dayPct,weekPct,lifePct};
-  const birth=new Date('1980-09-11T00:00:00Z').getTime();
-  const endLife=birth+4000*7*24*60*60*1000;
-  const pct=(s,e,n)=>Math.max(0,Math.min(1,(n-s)/(e-s)));
-  const sDay=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
-  const sMonth=d=>new Date(d.getFullYear(),d.getMonth(),1);
-  const sNextMonth=d=>new Date(d.getFullYear(),d.getMonth()+1,1);
-  const sYear=d=>new Date(d.getFullYear(),0,1);
-  const sNextYear=d=>new Date(d.getFullYear()+1,0,1);
-  const fmt=n=>(n*100).toFixed(2)+'%';
+  const el={yearLabel,monthLabel,dayLabel,weekLabel,lifeLabel,yearFill,monthFill,dayFill,weekFill,lifeFill,yearPct,monthPct,dayPct,weekPct,lifePct};
+  const birth=new Date('1980-09-11T00:00:00Z').getTime();
+  const endLife=birth+4000*7*24*60*60*1000;
+  const pct=(s,e,n)=>Math.max(0,Math.min(1,(n-s)/(e-s)));
+  const sDay=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
+  const sMonth=d=>new Date(d.getFullYear(),d.getMonth(),1);
+  const sNextMonth=d=>new Date(d.getFullYear(),d.getMonth()+1,1);
+  const sYear=d=>new Date(d.getFullYear(),0,1);
+  const sNextYear=d=>new Date(d.getFullYear()+1,0,1);
+  const fmt=n=>(n*100).toFixed(2)+'%';
 
-  function tick(){
-    const n=new Date(),ms=n.getTime();
-    el.yearLabel.textContent=n.getFullYear();
-    el.monthLabel.textContent=n.toLocaleDateString('es-ES',{month:'long'});
-    el.dayLabel.textContent=n.getDate();
-    el.weekLabel.textContent=n.toLocaleDateString('es-ES',{weekday:'long'});
-    const startWeek=new Date(n); startWeek.setDate(n.getDate()-n.getDay());
-    const endWeek=new Date(startWeek); endWeek.setDate(startWeek.getDate()+7);
-    const pw=pct(startWeek.getTime(),endWeek.getTime(),ms);
-    const pl=pct(birth,endLife,ms);
-    const py=pct(sYear(n).getTime(),sNextYear(n).getTime(),ms);
-    const pm=pct(sMonth(n).getTime(),sNextMonth(n).getTime(),ms);
-    const pd=pct(sDay(n).getTime(),sDay(n).getTime()+86400000,ms);
-    el.yearFill.style.width=(py*100).toFixed(2)+'%';
-    el.monthFill.style.width=(pm*100).toFixed(2)+'%';
-    el.dayFill.style.width=(pd*100).toFixed(2)+'%';
-    el.weekFill.style.width=(pw*100).toFixed(2)+'%';
-    el.lifeFill.style.width=(pl*100).toFixed(2)+'%';
-    el.yearPct.textContent=fmt(py);
-    el.monthPct.textContent=fmt(pm);
-    el.dayPct.textContent=fmt(pd);
-    el.weekPct.textContent=fmt(pw);
-    el.lifePct.textContent=fmt(pl);
-    setTimeout(tick,1000-n.getMilliseconds());
-  }
-  tick();
+  function tick(){
+    const n=new Date(),ms=n.getTime();
+    el.yearLabel.textContent=n.getFullYear();
+    el.monthLabel.textContent=n.toLocaleDateString('es-ES',{month:'long'});
+    el.dayLabel.textContent=n.getDate();
+    el.weekLabel.textContent=n.toLocaleDateString('es-ES',{weekday:'long'});
+    
+    // --- CORRECCIÓN DEL CÁLCULO DE LA SEMANA ---
+    // n.getDay() devuelve 0 (Domingo) - 6 (Sábado).
+    // Queremos que la semana comience el Lunes (1).
+    let dayIndex = n.getDay();
+    // Ajusta el índice: 0 (Domingo) -> 6, y 1 (Lunes) -> 0, etc.
+    // Esto hace que el Lunes tenga un offset de 0, Martes de 1, ..., Domingo de 6.
+    const dayOffset = dayIndex === 0 ? 6 : dayIndex - 1;
+
+    const startWeek = new Date(n); 
+    // Resta el offset para llegar al Lunes de la semana actual
+    startWeek.setDate(n.getDate() - dayOffset); 
+    // Asegura que sea la medianoche del Lunes (00:00:00.000)
+    startWeek.setHours(0, 0, 0, 0); 
+    
+    // endWeek sigue siendo el Lunes de la semana siguiente (7 días después)
+    const endWeek=new Date(startWeek); endWeek.setDate(startWeek.getDate()+7);
+    // --- FIN CORRECCIÓN ---
+    
+    const pw=pct(startWeek.getTime(),endWeek.getTime(),ms);
+    const pl=pct(birth,endLife,ms);
+    const py=pct(sYear(n).getTime(),sNextYear(n).getTime(),ms);
+    const pm=pct(sMonth(n).getTime(),sNextMonth(n).getTime(),ms);
+    const pd=pct(sDay(n).getTime(),sDay(n).getTime()+86400000,ms);
+    el.yearFill.style.width=(py*100).toFixed(2)+'%';
+    el.monthFill.style.width=(pm*100).toFixed(2)+'%';
+    el.dayFill.style.width=(pd*100).toFixed(2)+'%';
+    el.weekFill.style.width=(pw*100).toFixed(2)+'%';
+    el.lifeFill.style.width=(pl*100).toFixed(2)+'%';
+    el.yearPct.textContent=fmt(py);
+    el.monthPct.textContent=fmt(pm);
+    el.dayPct.textContent=fmt(pd);
+    el.weekPct.textContent=fmt(pw);
+    el.lifePct.textContent=fmt(pl);
+    setTimeout(tick,1000-n.getMilliseconds());
+  }
+  tick();
 })();
 </script>
 </body>
