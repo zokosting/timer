@@ -27,7 +27,25 @@ html,body{margin:0;padding:0;width:100%;height:100%;font-family:system-ui,sans-s
 
 <script>
 (function(){
-  const el={yearLabel,monthLabel,dayLabel,weekLabel,lifeLabel,yearFill,monthFill,dayFill,weekFill,lifeFill,yearPct,monthPct,dayPct,weekPct,lifePct};
+  // obtener referencias DOM correctamente
+  const el = {
+    yearLabel: document.getElementById('yearLabel'),
+    monthLabel: document.getElementById('monthLabel'),
+    dayLabel: document.getElementById('dayLabel'),
+    weekLabel: document.getElementById('weekLabel'),
+    lifeLabel: document.getElementById('lifeLabel'),
+    yearFill: document.getElementById('yearFill'),
+    monthFill: document.getElementById('monthFill'),
+    dayFill: document.getElementById('dayFill'),
+    weekFill: document.getElementById('weekFill'),
+    lifeFill: document.getElementById('lifeFill'),
+    yearPct: document.getElementById('yearPct'),
+    monthPct: document.getElementById('monthPct'),
+    dayPct: document.getElementById('dayPct'),
+    weekPct: document.getElementById('weekPct'),
+    lifePct: document.getElementById('lifePct')
+  };
+
   const birth=new Date('1980-09-11T00:00:00Z').getTime();
   const endLife=birth+4000*7*24*60*60*1000;
   const pct=(s,e,n)=>Math.max(0,Math.min(1,(n-s)/(e-s)));
@@ -39,29 +57,44 @@ html,body{margin:0;padding:0;width:100%;height:100%;font-family:system-ui,sans-s
   const fmt=n=>(n*100).toFixed(2)+'%';
 
   function tick(){
-    const n=new Date(),ms=n.getTime();
+    const n=new Date(), ms=n.getTime();
     el.yearLabel.textContent=n.getFullYear();
     el.monthLabel.textContent=n.toLocaleDateString('es-ES',{month:'long'});
     el.dayLabel.textContent=n.getDate();
+
+    // mostrar nombre del día (minúsculas come from CSS text-transform)
     el.weekLabel.textContent=n.toLocaleDateString('es-ES',{weekday:'long'});
-    const startWeek=new Date(n); startWeek.setDate(n.getDate()-n.getDay());
-    const endWeek=new Date(startWeek); endWeek.setDate(startWeek.getDate()+7);
+
+    // Calcular inicio de semana **empezando el lunes**
+    // weekday: 0 = lunes, ... 6 = domingo
+    const weekday = (n.getDay() + 6) % 7;
+    const startWeek = new Date(n.getFullYear(), n.getMonth(), n.getDate());
+    startWeek.setHours(0,0,0,0);
+    startWeek.setDate(startWeek.getDate() - weekday);
+    const endWeek = new Date(startWeek);
+    endWeek.setDate(startWeek.getDate() + 7);
+    endWeek.setHours(0,0,0,0);
+
     const pw=pct(startWeek.getTime(),endWeek.getTime(),ms);
     const pl=pct(birth,endLife,ms);
     const py=pct(sYear(n).getTime(),sNextYear(n).getTime(),ms);
     const pm=pct(sMonth(n).getTime(),sNextMonth(n).getTime(),ms);
     const pd=pct(sDay(n).getTime(),sDay(n).getTime()+86400000,ms);
+
     el.yearFill.style.width=(py*100).toFixed(2)+'%';
     el.monthFill.style.width=(pm*100).toFixed(2)+'%';
     el.dayFill.style.width=(pd*100).toFixed(2)+'%';
     el.weekFill.style.width=(pw*100).toFixed(2)+'%';
     el.lifeFill.style.width=(pl*100).toFixed(2)+'%';
+
     el.yearPct.textContent=fmt(py);
     el.monthPct.textContent=fmt(pm);
     el.dayPct.textContent=fmt(pd);
     el.weekPct.textContent=fmt(pw);
     el.lifePct.textContent=fmt(pl);
-    setTimeout(tick,1000-n.getMilliseconds());
+
+    // llamar de nuevo en el siguiente segundo (sincrónico al reloj)
+    setTimeout(tick, 1000 - n.getMilliseconds());
   }
   tick();
 })();
