@@ -45,15 +45,15 @@ html,body{margin:0;padding:0;width:100%;height:100%;font-family:system-ui,sans-s
     el.dayLabel.textContent=n.getDate();
     el.weekLabel.textContent=n.toLocaleDateString('es-ES',{weekday:'long'});
     
-    // Lógica Corregida para que la semana comience el Lunes (1) y termine el Domingo (0)
-    const day = n.getDay(); // 0=Dom, 1=Lun, ..., 6=Sáb
-    const diff = day === 0 ? 6 : day - 1; // Si es Dom (0), resta 6. Si es Lun (1), resta 0.
+    // Lógica corregida para iniciar la semana en Lunes (1)
+    const day = n.getDay(); // 0=Dom, 1=Lun, ..., 6=Sáb
+    // Restamos 'day - 1' si es Lun-Sáb, y restamos 6 si es Dom (para llegar al Lunes anterior)
+    const diff = day === 0 ? 6 : day - 1; 
     const startWeek=new Date(n); 
-    startWeek.setDate(n.getDate()-diff); // Establece el Lunes de esta semana
-    startWeek.setHours(0, 0, 0, 0); // Asegura que empiece exactamente a las 00:00:00.000 del Lunes
+    startWeek.setDate(n.getDate()-diff);
+    startWeek.setHours(0, 0, 0, 0); // Establecer a medianoche del Lunes
 
-    const endWeek=new Date(startWeek); 
-    endWeek.setDate(startWeek.getDate()+7); // Lunes de la próxima semana
+    const endWeek=new Date(startWeek); endWeek.setDate(startWeek.getDate()+7);
     
     const pw=pct(startWeek.getTime(),endWeek.getTime(),ms);
     const pl=pct(birth,endLife,ms);
