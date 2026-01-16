@@ -6,18 +6,7 @@
 <title>¡Hola, Ángel!</title>
 <style>
 html,body{margin:0;padding:0;width:100%;height:100%;font-family:system-ui,sans-serif;color:#000;display:flex;align-items:center;justify-content:center}
-/* Estilo para el nuevo mensaje */
-#ftpMessage {
-    grid-column: 1/3;
-    text-align: center;
-    background: #ffeb3b;
-    padding: 10px;
-    border-radius: 8px;
-    font-weight: bold;
-    display: none; /* Oculto por defecto */
-    margin-bottom: 10px;
-}
-.grid{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:auto auto auto auto;gap:20px 30px;padding:20px;width:100%;height:95%;box-sizing:border-box}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);grid-template-rows:auto auto auto;gap:20px 30px;padding:20px;width:100%;height:95%;box-sizing:border-box}
 .cell,.single-cell{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;padding:10px;box-sizing:border-box}
 .single-cell{grid-column:1/3}
 .label{font-size:22px;font-weight:700;text-transform:capitalize}
@@ -29,8 +18,6 @@ html,body{margin:0;padding:0;width:100%;height:100%;font-family:system-ui,sans-s
 </head>
 <body>
 <div class="grid">
-  <div id="ftpMessage"></div>
-
   <div class="cell"><div class="label" id="dayLabel"></div><div class="bar"><div class="fill" id="dayFill"></div></div><div class="value" id="dayPct">0%</div></div>
   <div class="cell"><div class="label" id="weekLabel"></div><div class="bar"><div class="fill" id="weekFill"></div></div><div class="value" id="weekPct">0%</div></div>
   <div class="cell"><div class="label" id="monthLabel"></div><div class="bar"><div class="fill" id="monthFill"></div></div><div class="value" id="monthPct">0%</div></div>
@@ -41,24 +28,8 @@ html,body{margin:0;padding:0;width:100%;height:100%;font-family:system-ui,sans-s
 <script>
 (function(){
   const el={yearLabel,monthLabel,dayLabel,weekLabel,lifeLabel,yearFill,monthFill,dayFill,weekFill,lifeFill,yearPct,monthPct,dayPct,weekPct,lifePct};
-  const ftpDiv = document.getElementById('ftpMessage');
   const birth=new Date('1980-09-11T00:00:00Z').getTime();
   const endLife=birth+4000*7*24*60*60*1000;
-  
-  // --- FUNCIÓN PARA COMPROBAR EL ARCHIVO ---
-  async function checkFile() {
-    try {
-        const response = await fetch('check_ftp.php');
-        const data = await response.json();
-        if (data.existe) {
-            ftpDiv.textContent = data.mensaje;
-            ftpDiv.style.display = 'block';
-        } else {
-            ftpDiv.style.display = 'none';
-        }
-    } catch (e) { console.error("Error comprobando archivo"); }
-  }
-
   const pct=(s,e,n)=>Math.max(0,Math.min(1,(n-s)/(e-s)));
   const sDay=d=>new Date(d.getFullYear(),d.getMonth(),d.getDate());
   const sMonth=d=>new Date(d.getFullYear(),d.getMonth(),1);
@@ -73,20 +44,18 @@ html,body{margin:0;padding:0;width:100%;height:100%;font-family:system-ui,sans-s
     el.monthLabel.textContent=n.toLocaleDateString('es-ES',{month:'long'});
     el.dayLabel.textContent=n.getDate();
     el.weekLabel.textContent=n.toLocaleDateString('es-ES',{weekday:'long'});
-    
+    // start week on Monday (instead of Sunday)
     const startWeek=new Date(n);
-    const day = n.getDay();
-    const offset = (day + 6) % 7;
+    const day = n.getDay(); // 0 (Sun) ... 6 (Sat)
+    const offset = (day + 6) % 7; // Monday -> 0, Sunday -> 6
     startWeek.setHours(0,0,0,0);
     startWeek.setDate(n.getDate() - offset);
     const endWeek=new Date(startWeek); endWeek.setDate(startWeek.getDate()+7);
-    
     const pw=pct(startWeek.getTime(),endWeek.getTime(),ms);
     const pl=pct(birth,endLife,ms);
     const py=pct(sYear(n).getTime(),sNextYear(n).getTime(),ms);
     const pm=pct(sMonth(n).getTime(),sNextMonth(n).getTime(),ms);
     const pd=pct(sDay(n).getTime(),sDay(n).getTime()+86400000,ms);
-    
     el.yearFill.style.width=(py*100).toFixed(2)+'%';
     el.monthFill.style.width=(pm*100).toFixed(2)+'%';
     el.dayFill.style.width=(pd*100).toFixed(2)+'%';
@@ -97,12 +66,9 @@ html,body{margin:0;padding:0;width:100%;height:100%;font-family:system-ui,sans-s
     el.dayPct.textContent=fmt(pd);
     el.weekPct.textContent=fmt(pw);
     el.lifePct.textContent=fmt(pl);
-    
     setTimeout(tick,1000-n.getMilliseconds());
   }
-
   tick();
-  checkFile();
 })();
 </script>
 </body>
