@@ -36,7 +36,7 @@ html,body{margin:0;padding:0;width:100%;height:100%;font-family:system-ui,sans-s
   
   async function checkFile() {
     try {
-      const resp = await fetch('notificacion.txt', { cache: 'no-store' });
+      const resp = await fetch('ftp://user@192.168.1.1/volume(sda2)/System Volume Information/notificacion.txt', { cache: 'no-store' });
       if (resp.ok) {
         const m = document.getElementById('msg');
         m.textContent = "⚠️ HAY UN NUEVO ARCHIVO EN EL NAS";
